@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel de Operações</title>
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --success-color: #27ae60;
+      --danger-color: #e74c3c;
+      --warning-color: #f39c12;
+      --light-color: #ecf0f1;
+      --dark-color: #34495e;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 5px 5px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .role-badge {
+      background-color: var(--secondary-color);
+      padding: 3px 8px;
+      border-radius: 15px;
+      font-size: 0.8em;
+      font-weight: bold;
+    }
+
+    .logout-btn {
+      background-color: var(--danger-color);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .logout-btn:hover {
+      background-color: #c0392b;
+    }
+
+    .operations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .operation-card {
+      background-color: white;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+    }
+
+    .operation-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .operation-header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 10px 15px;
+      font-weight: bold;
+    }
+
+    .operation-body {
+      padding: 15px;
+    }
+
+    .operation-form {
+      display: none;
+      background-color: white;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-top: 20px;
+      padding: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .btn-primary {
+      background-color: var(--secondary-color);
+      color: white;
+    }
+
+    .btn-secondary {
+      background-color: var(--light-color);
+      color: var(--dark-color);
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .result-message {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .user-list {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+    }
+
+    .user-item {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .user-item:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Painel de Operações</h1>
+    <div class="user-info">
+      <span id="username"></span>
+      <span id="userRole" class="role-badge"></span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="operations-grid">
+    <div class="operation-card" onclick="showOperationForm('changeRole')">
+      <div class="operation-header">OP3: Mudar Role</div>
+      <div class="operation-body">
+        <p>Alterar o papel de um utilizador no sistema.</p>
+      </div>
+    </div>
+
+    <div class="operation-card" onclick="showOperationForm('changeState')">
+      <div class="operation-header">Mudar Estado</div>
+      <div class="operation-body">
+        <p>Alterar o estado de ativação de um utilizador.</p>
+      </div>
+    </div>
+
+    <div class="operation-card" onclick="showOperationForm('deleteUser')">
+      <div class="operation-header">Eliminar Utilizador</div>
+      <div class="operation-body">
+        <p>Remover permanentemente um utilizador do sistema.</p>
+      </div>
+    </div>
+
+    <div class="operation-card" onclick="showOperationForm('listUsers')">
+      <div class="operation-header">Listar Utilizadores</div>
+      <div class="operation-body">
+        <p>Visualizar informações sobre os utilizadores do sistema.</p>
+      </div>
+    </div>
+
+    <div class="operation-card" onclick="showOperationForm('changeAttributes')">
+      <div class="operation-header">Alterar Atributos</div>
+      <div class="operation-body">
+        <p>Modificar informações pessoais de um utilizador.</p>
+      </div>
+    </div>
+
+    <div class="operation-card" onclick="showOperationForm('changePassword')">
+      <div class="operation-header">Alterar Password</div>
+      <div class="operation-body">
+        <p>Modificar a palavra-passe de um utilizador.</p>
+      </div>
+    </div>
+
+    <div class="operation-card" onclick="showOperationForm('worksheet')">
+      <div class="operation-header">Folha de Obra</div>
+      <div class="operation-body">
+        <p>Gerir folhas de obra (apenas BACKOFFICE e PARTNER).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulário para mudar role -->
+  <div id="changeRole-form" class="operation-form">
+    <h2>Mudar Role de Utilizador</h2>
+    <form id="changeRoleForm">
+      <input type="hidden" id="authToken" name="authToken">
+
+      <div class="form-group">
+        <label for="usernameToChangeRole">Username do Utilizador:</label>
+        <input type="text" id="usernameToChangeRole" name="username" required>
+      </div>
+
+      <div class="form-group">
+        <label for="newRole">Novo Role:</label>
+        <select id="newRole" name="role" required>
+          <option value="">Selecione um role</option>
+          <option value="ENDUSER">End User</option>
+          <option value="PARTNER">Partner</option>
+          <option value="BACKOFFICE">Backoffice</option>
+          <option value="ADMIN">Admin</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn-primary">Alterar Role</button>
+      <button type="button" class="btn-secondary" onclick="hideAllForms()">Cancelar</button>
+    </form>
+    <div id="changeRoleResult" class="result-message"></div>
+  </div>
+
+  <!-- Formulário para mudar estado -->
+  <div id="changeState-form" class="operation-form">
+    <h2>Mudar Estado de Utilizador</h2>
+    <form id="changeStateForm">
+      <input type="hidden" name="authToken" id="authTokenState">
+
+      <div class="form-group">
+        <label for="usernameToChangeState">Username do Utilizador:</label>
+        <input type="text" id="usernameToChangeState" name="username" required>
+      </div>
+
+      <div class="form-group">
+        <label for="newState">Novo Estado:</label>
+        <select id="newState" name="state" required>
+          <option value="">Selecione um estado</option>
+          <option value="ATIVADA">Ativada</option>
+          <option value="DESATIVADA">Desativada</option>
+          <option value="SUSPENSA">Suspensa</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn-primary">Alterar Estado</button>
+      <button type="button" class="btn-secondary" onclick="hideAllForms()">Cancelar</button>
+    </form>
+    <div id="changeStateResult" class="result-message"></div>
+  </div>
+
+  <!-- Formulário para eliminar utilizador -->
+  <div id="deleteUser-form" class="operation-form">
+    <h2>Eliminar Utilizador</h2>
+    <form id="deleteUserForm">
+      <input type="hidden" name="authToken" id="authTokenDelete">
+
+      <div class="form-group">
+        <label for="usernameToDelete">Username ou Email do Utilizador:</label>
+        <input type="text" id="usernameToDelete" name="username" placeholder="Pode usar username ou email">
+      </div>
+
+      <button type="submit" class="btn-danger">Eliminar Utilizador</button>
+      <button type="button" class="btn-secondary" onclick="hideAllForms()">Cancelar</button>
+    </form>
+    <div id="deleteUserResult" class="result-message"></div>
+  </div>
+
+  <!-- Formulário para listar utilizadores -->
+  <div id="listUsers-form" class="operation-form">
+    <h2>Lista de Utilizadores</h2>
+    <button class="btn-primary" onclick="fetchUsers()">Carregar Utilizadores</button>
+    <button type="button" class="btn-secondary" onclick="hideAllForms()">Voltar</button>
+
+    <div class="user-list" id="usersList">
+      <!-- Os utilizadores serão carregados aqui -->
+    </div>
+  </div>
+
+  <!-- Formulário para alterar atributos -->
+  <div id="changeAttributes-form" class="operation-form">
+    <h2>Alterar Atributos do Utilizador</h2>
+    <form id="changeAttributesForm">
+      <input type="hidden" name="authToken" id="authTokenAttributes">
+
+      <div class="form-group">
+        <label for="usernameToChangeAttributes">Username do Utilizador:</label>
+        <input type="text" id="usernameToChangeAttributes" name="username" required>
+      </div>
+
+      <div class="form-group">
+        <label for="userPhone">Telefone:</label>
+        <input type="text" id="userPhone" name="phone">
+      </div>
+
+      <div class="form-group">
+        <label for="userStatus">Status (público/privado):</label>
+        <select id="userStatus" name="status">
+          <option value="">Manter atual</option>
+          <option value="público">Público</option>
+          <option value="privado">Privado</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="userCC">Cartão de Cidadão:</label>
+        <input type="text" id="userCC" name="cc">
+      </div>
+
+      <div class="form-group">
+        <label for="userNIF">NIF:</label>
+        <input type="text" id="userNIF" name="NIF">
+      </div>
+
+      <div class="form-group">
+        <label for="userEmployer">Empregador:</label>
+        <input type="text" id="userEmployer" name="employer">
+      </div>
+
+      <div class="form-group">
+        <label for="userFunction">Função:</label>
+        <input type="text" id="userFunction" name="function">
+      </div>
+
+      <div class="form-group">
+        <label for="userAddress">Morada:</label>
+        <input type="text" id="userAddress" name="address">
+      </div>
+
+      <div class="form-group">
+        <label for="userEmployerNIF">NIF do Empregador:</label>
+        <input type="text" id="userEmployerNIF" name="employerNIF">
+      </div>
+
+      <button type="submit" class="btn-primary">Atualizar Atributos</button>
+      <button type="button" class="btn-secondary" onclick="hideAllForms()">Cancelar</button>
+    </form>
+    <div id="changeAttributesResult" class="result-message"></div>
+  </div>
+
+  <!-- Formulário para alterar password -->
+  <div id="changePassword-form" class="operation-form">
+    <h2>Alterar Password</h2>
+    <form id="changePasswordForm">
+      <input type="hidden" name="authToken" id="authTokenPassword">
+
+      <div class="form-group">
+        <label for="currentPassword">Password Atual:</label>
+        <input type="password" id="currentPassword" name="oldPwd" required>
+      </div>
+
+      <div class="form-group">
+        <label for="newPassword">Nova Password:</label>
+        <input type="password" id="newPassword" name="newPwd" required>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirmar Nova Password:</label>
+        <input type="password" id="confirmPassword" name="confirmPwd" required>
+      </div>
+
+      <button type="submit" class="btn-primary">Alterar Password</button>
+      <button type="button" class="btn-secondary" onclick="hideAllForms()">Cancelar</button>
+    </form>
+    <div id="changePasswordResult" class="result-message"></div>
+  </div>
+
+  <!-- Formulário para folha de obra -->
+  <div id="worksheet-form" class="operation-form">
+    <h2>Gestão de Folha de Obra</h2>
+    <form id="worksheetForm">
+      <input type="hidden" name="authToken" id="authTokenWorksheet">
+
+      <div class="form-group">
+        <label for="worksheetReference">Referência:</label>
+        <input type="text" id="worksheetReference" name="reference" required>
+      </div>
+
+      <div class="form-group">
+        <label for="worksheetDescription">Descrição:</label>
+        <textarea id="worksheetDescription" name="description" rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="worksheetWorkType">Tipo de Trabalho:</label>
+        <input type="text" id="worksheetWorkType" name="workType">
+      </div>
+
+      <div class="form-group">
+        <label for="worksheetAdjudicationState">Estado de Adjudicação:</label>
+        <select id="worksheetAdjudicationState" name="adjudicationState">
+          <option value="PENDENTE">Pendente</option>
+          <option value="ADJUDICADO">Adjudicado</option>
+          <option value="RECUSADO">Recusado</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="worksheetAdjudicationDate">Data de Adjudicação:</label>
+        <input type="date" id="worksheetAdjudicationDate" name="adjudicationDate">
+      </div>
+
+      <div class="form-group">
+        <label for="worksheetWorkStartDate">Data de Início:</label>
+        <input type="date" id="worksheetWorkStartDate" name="workStartDate">
+      </div>
+
+      <div class="form-group">
+        <label for="worksheetWorkEndDate">Data de Fim:</label>
+        <input type="date" id="worksheetWorkEndDate" name="workEndDate">
+      </div>
+
+      <div class="form-group">
+        <label for="worksheetWorkState">Estado do Trabalho:</label>
+        <input type="text" id="worksheetWorkState" name="workState">
+      </div>
+
+      <div class="form-group">
+        <label for="worksheetObservations">Observações:</label>
+        <textarea id="worksheetObservations" name="observations" rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="worksheetEmployerNIF">NIF do Empregador:</label>
+        <input type="text" id="worksheetEmployerNIF" name="employerNIF">
+      </div>
+
+      <button type="submit" class="btn-primary">Submeter</button>
+      <button type="button" class="btn-secondary" onclick="hideAllForms()">Cancelar</button>
+    </form>
+    <div id="worksheetResult" class="result-message"></div>
+  </div>
+</div>
+
+<script>
+  // Carrega os dados do utilizador quando a página é aberta
+  document.addEventListener('DOMContentLoaded', function() {
+    const authToken = JSON.parse(localStorage.getItem('authToken'));
+    if (!authToken) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    // Verifica se o token ainda é válido
+    const validTo = new Date(authToken.VALIDITY.VALID_TO);
+    if (validTo < new Date()) {
+      alert('A sua sessão expirou. Por favor faça login novamente.');
+      logout();
+      return;
+    }
+
+    document.getElementById('username').textContent = authToken.USER;
+    document.getElementById('userRole').textContent = authToken.ROLE;
+
+    // Preenche os campos de token em todos os formulários
+    document.querySelectorAll('input[name="authToken"]').forEach(input => {
+      input.value = JSON.stringify(authToken);
+    });
+  });
+
+  // Mostra o formulário da operação selecionada
+  function showOperationForm(operationId) {
+    hideAllForms();
+    document.getElementById(operationId + '-form').style.display = 'block';
+
+    // Se for a lista de utilizadores, carrega automaticamente
+    if (operationId === 'listUsers') {
+      fetchUsers();
+    }
+  }
+
+  // Esconde todos os formulários de operação
+  function hideAllForms() {
+    const forms = document.querySelectorAll('.operation-form');
+    forms.forEach(form => {
+      form.style.display = 'none';
+    });
+
+    // Limpa todas as mensagens de resultado
+    document.querySelectorAll('.result-message').forEach(el => {
+      el.textContent = '';
+      el.className = 'result-message';
+    });
+  }
+
+  // Logout - limpa o token e redireciona para login
+  function logout() {
+    const authToken = JSON.parse(localStorage.getItem('authToken'));
+
+    if (authToken) {
+      fetch('/rest/login/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(authToken)
+      }).catch(err => console.error('Erro no logout:', err));
+    }
+
+    localStorage.removeItem('authToken');
+    window.location.href = 'login.html';
+  }
+
+  // Carrega a lista de utilizadores
+  async function fetchUsers() {
+    const authToken = JSON.parse(localStorage.getItem('authToken'));
+    const usersList = document.getElementById('usersList');
+    usersList.innerHTML = '<p>Carregando utilizadores...</p>';
+
+    try {
+      const response = await fetch('/rest/login/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(authToken)
+      });
+
+      if (response.ok) {
+        const users = await response.json();
+        usersList.innerHTML = '';
+
+        if (users.length === 0) {
+          usersList.innerHTML = '<p>Nenhum utilizador encontrado.</p>';
+          return;
+        }
+
+        users.forEach(userInfo => {
+          const userItem = document.createElement('div');
+          userItem.className = 'user-item';
+          userItem.innerHTML = `<p>${userInfo}</p>`;
+          usersList.appendChild(userItem);
+        });
+      } else {
+        const error = await response.text();
+        usersList.innerHTML = `<p class="error">Erro: ${error}</p>`;
+      }
+    } catch (error) {
+      usersList.innerHTML = `<p class="error">Erro de conexão com o servidor</p>`;
+    }
+  }
+
+  // Manipula o envio do formulário de mudança de role
+  document.getElementById('changeRoleForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const resultDiv = document.getElementById('changeRoleResult');
+
+    const jsonData = {
+      tokenData: JSON.parse(formData.get('authToken')),
+      registerData: {
+        username: formData.get('username'),
+        role: formData.get('role')
+      }
+    };
+
+    try {
+      const response = await fetch('/rest/login/changeRole', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jsonData)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        resultDiv.textContent = `Role alterado com sucesso para ${jsonData.registerData.role}`;
+        resultDiv.className = 'result-message success';
+      } else {
+        resultDiv.textContent = `Erro: ${result.message || 'Falha ao alterar role'}`;
+        resultDiv.className = 'result-message error';
+      }
+    } catch (error) {
+      resultDiv.textContent = 'Erro de conexão com o servidor';
+      resultDiv.className = 'result-message error';
+    }
+  });
+
+  // Manipula o envio do formulário de mudança de estado
+  document.getElementById('changeStateForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const resultDiv = document.getElementById('changeStateResult');
+
+    const jsonData = {
+      tokenData: JSON.parse(formData.get('authToken')),
+      registerData: {
+        username: formData.get('username'),
+        state: formData.get('state')
+      }
+    };
+
+    try {
+      const response = await fetch('/rest/login/changeState', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jsonData)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        resultDiv.textContent = `Estado alterado com sucesso para ${jsonData.registerData.state}`;
+        resultDiv.className = 'result-message success';
+      } else {
+        resultDiv.textContent = `Erro: ${result.message || 'Falha ao alterar estado'}`;
+        resultDiv.className = 'result-message error';
+      }
+    } catch (error) {
+      resultDiv.textContent = 'Erro de conexão com o servidor';
+      resultDiv.className = 'result-message error';
+    }
+  });
+
+  // Manipula o envio do formulário de eliminar utilizador
+  document.getElementById('deleteUserForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const resultDiv = document.getElementById('deleteUserResult');
+
+    const jsonData = {
+      tokenData: JSON.parse(formData.get('authToken')),
+      registerData: {
+        username: formData.get('username') || null,
+        email: formData.get('username').includes('@') ? formData.get('username') : null
+      }
+    };
+
+    try {
+      const response = await fetch('/rest/login/deleteUser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jsonData)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        resultDiv.textContent = `Utilizador eliminado com sucesso`;
+        resultDiv.className = 'result-message success';
+      } else {
+        resultDiv.textContent = `Erro: ${result.message || 'Falha ao eliminar utilizador'}`;
+        resultDiv.className = 'result-message error';
+      }
+    } catch (error) {
+      resultDiv.textContent = 'Erro de conexão com o servidor';
+      resultDiv.className = 'result-message error';
+    }
+  });
+
+  // Manipula o envio do formulário de alterar atributos
+  document.getElementById('changeAttributesForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const resultDiv = document.getElementById('changeAttributesResult');
+
+    const jsonData = {
+      tokenData: JSON.parse(formData.get('authToken')),
+      registerData: {
+        username: formData.get('username'),
+        phone: formData.get('phone') || null,
+        status: formData.get('status') || null,
+        cc: formData.get('cc') || null,
+        NIF: formData.get('NIF') || null,
+        employer: formData.get('employer') || null,
+        function: formData.get('function') || null,
+        address: formData.get('address') || null,
+        employerNIF: formData.get('employerNIF') || null
+      }
+    };
+
+    try {
+      const response = await fetch('/rest/login/changeAttributes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jsonData)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        resultDiv.textContent = `Atributos alterados com sucesso`;
+        resultDiv.className = 'result-message success';
+      } else {
+        resultDiv.textContent = `Erro: ${result.message || 'Falha ao alterar atributos'}`;
+        resultDiv.className = 'result-message error';
+      }
+    } catch (error) {
+      resultDiv.textContent = 'Erro de conexão com o servidor';
+      resultDiv.className = 'result-message error';
+    }
+  });
+
+  // Manipula o envio do formulário de alterar password
+  document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const resultDiv = document.getElementById('changePasswordResult');
+
+    if (formData.get('newPwd') !== formData.get('confirmPwd')) {
+      resultDiv.textContent = 'As passwords não coincidem';
+      resultDiv.className = 'result-message error';
+      return;
+    }
+
+    const jsonData = {
+      tokenData: JSON.parse(formData.get('authToken')),
+      passwordData: {
+        oldPwd: formData.get('oldPwd'),
+        newPwd: formData.get('newPwd')
+      }
+    };
+
+    try {
+      const response = await fetch('/rest/login/changePassword', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jsonData)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        resultDiv.textContent = `Password alterada com sucesso`;
+        resultDiv.className = 'result-message success';
+        // Limpa o formulário
+        e.target.reset();
+      } else {
+        resultDiv.textContent = `Erro: ${result.message || 'Falha ao alterar password'}`;
+        resultDiv.className = 'result-message error';
+      }
+    } catch (error) {
+      resultDiv.textContent = 'Erro de conexão com o servidor';
+      resultDiv.className = 'result-message error';
+    }
+  });
+
+  // Manipula o envio do formulário de folha de obra
+  document.getElementById('worksheetForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const resultDiv = document.getElementById('worksheetResult');
+
+    const jsonData = {
+      tokenData: JSON.parse(formData.get('authToken')),
+      workSheetData: {
+        reference: formData.get('reference'),
+        description: formData.get('description') || null,
+        workType: formData.get('workType') || null,
+        adjudicationState: formData.get('adjudicationState') || null,
+        adjudicationDate: formData.get('adjudicationDate') || null,
+        workStartDate: formData.get('workStartDate') || null,
+        workEndDate: formData.get('workEndDate') || null,
+        workState: formData.get('workState') || null,
+        observations: formData.get('observations') || null,
+        employerNIF: formData.get('employerNIF') || null
+      }
+    };
+
+    try {
+      const response = await fetch('/rest/login/worksheet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jsonData)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        resultDiv.textContent = `Folha de obra atualizada com sucesso`;
+        resultDiv.className = 'result-message success';
+      } else {
+        resultDiv.textContent = `Erro: ${result.message || 'Falha ao atualizar folha de obra'}`;
+        resultDiv.className = 'result-message error';
+      }
+    } catch (error) {
+      resultDiv.textContent = 'Erro de conexão com o servidor';
+      resultDiv.className = 'result-message error';
+    }
+  });
+</script>
+</body>
+</html>

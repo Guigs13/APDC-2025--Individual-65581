@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <title>Registo de Utilizador</title>
+  <style>
+    body {
+      font-family: Arial, serif;
+      padding: 20px;
+    }
+    form {
+      max-width: 400px;
+      margin: auto;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 20px;
+    }
+    p {
+      font-weight: bold;
+    }
+
+  </style>
+</head>
+<body>
+<h1>Registo</h1>
+<form id="registerForm">
+  <label for="fullName">Nome completo:</label>
+  <input type="text" id="fullName" name="fullName" placeholder="Nome completo" required />
+
+  <label for="username">Username:</label>
+  <input type="text" id="username" name="username" placeholder="Username" required />
+
+  <label for="email">Email:</label>
+  <input type="text" id="email" name="email" placeholder="Email" required />
+
+  <label for="phone">Telefone:</label>
+  <input type="text" id="phone" name="phone" placeholder="Telefone" />
+
+  <label for="password">Password:</label>
+  <input type="password" id="password" name="password" placeholder="Password" required />
+
+  <label for="confirmation">Confirmação da Password:</label>
+  <input type="password" id="confirmation" name="confirmation" placeholder="Confirme a Password" required/>
+
+  <label for="status">Status:</label>
+  <select id="status" name="status">
+    <option value="público">Público</option>
+    <option value="privado">Privado</option>
+  </select>
+
+  <label for="cc">Cartão de Cidadão (opcional):</label>
+  <input type="text" id="cc" name="cc" placeholder="Cartão de Cidadão (opcional)" />
+
+  <label for="NIF">NIF (opcional):</label>
+  <input type="text" id="NIF" name="NIF" placeholder="NIF (opcional)" />
+
+  <label for="employer">Empresa (opcional):</label>
+  <input type="text" id="employer" name="employer" placeholder="Empresa (opcional)" />
+
+  <label for="function">Função (opcional):</label>
+  <input type="text" id="function" name="function" placeholder="Função(opcional)" />
+
+  <label for="address">Morada (opcional):</label>
+  <input type="text" id="address" name="address" placeholder="Morada (opcional)" />
+
+  <label for="employerNIF">NIF da Empresa(opcional):</label>
+  <input type="text" id="employerNIF" name="employerNIF" placeholder="NIF da Empresa(opcional)" />
+
+
+  <button type="submit">Registar</button>
+  <button type="button" onclick="window.location.href='../index.html'">Voltar à Página Inicial</button>
+</form>
+
+<p id="registerResponse"></p>
+
+
+<script>
+  document.getElementById("registerForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const jsonData = Object.fromEntries(formData.entries());
+
+    const response = await fetch("/rest/register/v3", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(jsonData)
+    });
+
+    const resultText = await response.text();
+    const responseElement = document.getElementById("registerResponse")
+
+    if(response.ok){
+      responseElement.innerText = "Registo feito com sucesso! A redirecionar " +
+              "para o login.";
+      setTimeout(function(){
+        window.location.href = "../html/login.html";
+      },2000);
+    }
+    else responseElement.innerText = "Erro: " + resultText;
+
+  });
+</script>
+</body>
+</html>
